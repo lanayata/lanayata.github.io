@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8">
+		<title>Bivariate Area Chart</title>
+		<style>
+			body{
+				font:10px sans-serif;
+			}
+			.axis path,
+			.axis line{
+				fill:none;
+				stroke:#000;
+				shape-rendering: crispEdges;
+			}
+			.x.path path{
+				display:none;
+			}
+			.area{
+				fill:steelblue;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="../d3.js"></script>
+		<script>
+			var margin = {
+					"top":20,
+					"right":20,
+					"bottom":30,
+					"left":50
+				},
+				width=960-margin.left-margin.right,
+				height=500-margin.top-margin.bottom;
+			var parseDate = d3.timeParse("%Y%m%d");
+			//x轴值域
+			var x = d3.scaleTime().range([0,width]);
+			//y轴值域			
+			var y = d3.scaleLinear().range([height,0]);
+			//x轴			
+			var xAxis = d3.axisBottom(x);
+			//y轴
+			var yAxis = d3.axisLeft(y);
+			var area = d3.area()
+						.x(function(d){return x(d.date);})
+						.y0(function(d){return y(d.low);})
+						.y1(function(d){return y(d.high);});
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width",width+margin.left+margin.right)
+						.attr("height",height+margin.top+margin.bottom)
+						.append("g")
+						.attr("transform","translate("+margin.left+","+margin.top+")");
+			d3.tsv("data.tsv",type,function(error,data){
+				if(error)throw error;
+				//x轴作用域
+				x.domain(d3.extent(data,function(d){return d.date;}));
+				//y轴作用域
+				y.domain([
+					d3.min(data,function(d){return d.low;}),
+					d3.max(data,function(d){return d.high;})
+				]);
+				//x轴g元素
+				svg.append("g")
+					.attr("class","x axis")
+					.attr("transform","translate(0,"+height+")")
+					.call(xAxis);
+				//y轴g元素，及y轴说明(单位)	
+				svg.append("g")
+					.attr("class","y axis")
+					.call(yAxis)
+					.append("text")
+					.attr("transform","rotate(-90)")
+					.attr("y",6)
+					.attr("dy",".71em")
+					.style("stroke","black")
+					.style("stroke-width",.4)
+					.text("Temperature (ºF)");
+				//-v4版本attr,style方法使用{key:value}赋值多个属性时，无法返回调用对象
+				//要显示的面积区域
+				svg.append("path")
+					.datum(data)
+					.attr("class","area")
+					.attr("d",area);
+			});
+			function type(d){
+				d.date = parseDate(d.date);
+				d.high = +d.high;
+				d.low =  +d.low;
+				return d;
+				//上边方法中使用+号，是因为d.close是字符串，此方法可以将字符串转为数字,如果不好理解可以使用Number(d.close)替换
+			}
+		</script>
+	</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8">
+		<title>Area Chart</title>
+		<style>
+			body{font:10px sans-serif;}
+			.axis path,
+			.axis line{
+				fill:none;
+				stroke:#000;
+				shape-rendering: crispEdges;
+			}
+			.area{fill:steelblue;}
+		</style>
+	</head>
+	<body>
+	<script type="text/javascript" src="../d3.js" ></script>
+	<script type="text/javascript">
+		var margin = {"top":20,"right":20,"bottom":30,"left":50},
+			width=960-margin.left-margin.right,
+			height=500-margin.top-margin.bottom;
+			//日期格式化
+		var parseDate = d3.timeParse("%d-%b-%y");
+		//时间比例尺-输出范围
+		var x = d3.scaleTime().range([0,width]);
+		//线性比例尺-输出值域			
+		var y = d3.scaleLinear().range([height,0]);
+		//坐标轴-底部x轴			
+		var xAxis = d3.axisBottom(x);
+		//坐标轴-左侧y轴
+		var yAxis = d3.axisLeft(y);
+		//面积图-其位置是从最上边开始
+		var area = d3.area()
+					.x(function(d){return x(d.date);})
+					.y0(height)
+					.y1(function(d){return y(d.close);});
+		var svg = d3.select("body")
+					.append("svg")
+					.attr("width",width+margin.left+margin.right)
+					.attr("height",height+margin.top+margin.bottom)
+					.append("g")
+					.attr("transform","translate("+margin.left+","+margin.top+")");
+		d3.tsv("data.tsv",function(error,data){
+			if(error)throw error;
+			data.forEach(function(d){
+				d.date = parseDate(d.date);
+				d.close = +d.close;
+			});
+			//上边方法中使用+号，是因为d.close是字符串，
+			//此方法可以将字符串转为数字,如果不好理解可以使用Number(d.close)替换
+			//x坐标轴值域
+			x.domain(d3.extent(data,function(d){return d.date;}));
+			//y坐标轴值域
+			y.domain([0,d3.max(data,function(d){return d.close;})]);
+			svg.append("path")
+				.datum(data)
+				.attr("class","area")
+				.attr("d",area);
+			svg.append("g")
+				.attr("class","x axis")
+				.attr("transform","translate(0,"+height+")")
+				.call(xAxis);
+			svg.append("g")
+				.attr("class","y axis")
+				.call(yAxis)
+				.append("text")
+				.attr("transform","rotate(-90)")
+				.attr("y",6)
+				.attr("dy",".71em")
+				.style("stroke","black")
+				.style("stroke-width",.4)
+				.text("Price ($)");
+			//默认y轴坐标轴，text-anchor在尾部	
+			//-v4版本attr,style方法使用{key:value}赋值多个属性时，无法返回调用对象
+		});
+	</script>
+	</body>
+</html>

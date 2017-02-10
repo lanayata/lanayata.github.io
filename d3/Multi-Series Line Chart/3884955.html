@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8">
+		<title>Multi-Series Line Chart</title>
+		<style>
+			.axis path,
+			.axis line{
+				fill:none;
+				stroke:#000;
+				shape-rendering: crispEdges;
+			}
+			.x.path path{
+				display:none;
+			}
+			.line{
+				fill:none;
+				stroke:steelblue;
+				stroke-width: 1.5px;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="../d3.js"></script>
+		<script>
+			var margin = {
+					"top":20,
+					"right":80,
+					"bottom":30,
+					"left":50
+				},
+				width=960-margin.left-margin.right,
+				height=500-margin.top-margin.bottom;
+			var parseDate = d3.timeParse("%Y%m%d");
+			//x轴值域
+			var x = d3.scaleTime().range([0,width]);
+			//y轴值域			
+			var y = d3.scaleLinear().range([height,0]);
+			//d3.schemeCategory10生成一个10个颜色的数组
+			var z = d3.scaleOrdinal(d3.schemeCategory10);
+			//curve设置线的类型（贝塞尔曲线）
+			var line = d3.line()
+						.curve(d3.curveBasis)
+						.x(function(d){return x(d.date);})
+						.y(function(d){return y(d.temperature);});
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width",width+margin.left+margin.right)
+						.attr("height",height+margin.top+margin.bottom);
+			var g = svg.append("g")
+						.attr("transform","translate("+margin.left+","+margin.top+")");
+			d3.tsv("data.tsv",type,function(error,data){
+				if(error)throw error;
+				//x轴作用域
+				var cities = data.columns.slice(1).map(function(v){
+					return {
+						id:v,
+						values:data.map(function(d){
+							return {"date":d.date,"temperature":d[v]};
+						})
+					}
+				});
+				//x轴作用域
+				x.domain(d3.extent(data,function(d){return d.date;}));
+				//y轴作用域
+				y.domain([
+					d3.min(cities,function(c){return d3.min(c.values,function(d){return d.temperature;});}),
+					d3.max(cities,function(c){return d3.max(c.values,function(d){return d.temperature;});})
+				]);
+				//
+				z.domain(cities.map(function(c){return c.id;}));
+				//x轴g元素
+				g.append("g")
+					.attr("class","x axis")
+					.attr("transform","translate(0,"+height+")")
+					.call(d3.axisBottom(x));
+				//y轴g元素，及y轴说明(单位)	
+				g.append("g")
+					.attr("class","y axis")
+					.call(d3.axisLeft(y))
+					.append("text")
+					.attr("transform","rotate(-90)")
+					.attr("y",6)
+					.attr("dy",".71em")
+					.style("fill","#000")
+					.text("Temperature (ºF)");
+				var city = g.selectAll(".city")
+							.data(cities)
+							.enter()
+							.append("g")
+							.attr("class","city");
+				city.append("path")
+					.attr("class","line")
+					.attr("d",function(d){return line(d.values);})
+					.style("stroke",function(d){return z(d.id);});
+				city.append("text")
+					.datum(function(d){
+						return {"id":d.id,"values":d.values[d.values.length-1]};
+					})
+					.attr("transform",function(d){return "translate("+x(d.values.date)+","+y(d.values.temperature)+")";})
+					.attr("x",3)
+					.attr("dy",".35em")
+					.style("font","12px sans-serif")
+					.text(function(d){return d.id;})
+			});
+			function type(d,_,columns){
+				//此处，columns = [date,New York,San Francisco,Austin]
+				d.date = parseDate(d.date);
+				for(var i=1,n=columns.length,c;i<n;++i){
+					d[c=columns[i]] = +d[c];
+				}
+				return d;
+			}
+		</script>
+	</body>
+</html>

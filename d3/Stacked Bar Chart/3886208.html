@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8">
+		<title>Stacked Bar Chart</title>
+		<style>
+			.bar{
+				fill:steelblue;
+			}
+			.axis path{
+				display:none;
+			}
+		</style>
+	</head>
+	<body>
+		<svg width="960" height="500"></svg>
+		<script type="text/javascript" src="../d3.js" ></script>
+		<script>
+			var svg = d3.select("svg"),
+				margin = {
+					"top":20,
+					"right":20,
+					"bottom":30,
+					"left":40
+				},
+				width = +svg.attr("width") - margin.left - margin.right,
+				height = +svg.attr("height") - margin.top - margin.bottom,
+				g = svg.append("g")
+						.attr("transform","translate("+margin.left+","+margin.top+")");
+				//离散集合比例尺		
+			var x = d3.scaleBand()
+						.rangeRound([0,width])
+						.padding(0.1)
+						.align(0.1);
+			var y = d3.scaleLinear().rangeRound([height,0]);
+			var z = d3.scaleOrdinal().range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+			var stack = d3.stack();
+			d3.csv("data.csv",type,function(error,data){
+				if(error) throw error;
+				//柱形排序
+				data.sort(function(a,b){return b.total - a.total;});
+				
+				x.domain(data.map(function(d){return d.State;}));
+				//nice()方法将值域两端的范围扩展至最接近的整数
+				y.domain([0,d3.max(data,function(d){return d.total;})]).nice();
+				/*legend的值段:Under 5 Years,5 to 13 Years,14 to 17 Years,18 to 24 Years,25 to 44 Years,45 to 64 Years,65 Years and Over*/
+				z.domain(data.columns.slice(1));
+				//stack.keys(data.columns.slice(1))(data),d3仍然使用连缀写法，所以stack.keys返回stack值，执行stack(data)
+				
+				/*
+				stack.keys(data.columns.slice(1))(data)类似于如下的数据 
+				[
+				  [[   0, 3840], [   0, 1600], [   0,  640], [   0,  320]], // Under 5 Years
+				  [[3840, 5760], [1600, 3040], [ 640, 1600], [ 320,  800]], // 5 to 13 Years
+				  [[5760, 6720], [3040, 4000], [1600, 2240], [ 800, 1440]], // 14 to 17 Years
+				  [[6720, 7120], [4000, 4400], [2240, 2640], [1440, 1840]], // 18 to 24 Years
+				]
+				经过.data(function(d){return d;})方法执行后，作用于rect元素上的数据就是
+				[[   0, 3840], [   0, 1600], [   0,  640], [   0,  320]]
+				这样的单条
+				在经过
+				.attr("y",function(d){return y(d[1]);})
+				这样的转化后，d的值就变成[0, 3840]这样的元素点了
+				设置width值为x.bandWidth()时适用于数据量较大时，如果数据量小，则显示很难看，需要设置固定的宽度
+				*/
+				g.selectAll(".serie")
+					.data(stack.keys(data.columns.slice(1))(data))
+					.enter()
+					.append("g")
+					.attr("class","serie")
+					.attr("fill",function(d){return z(d.key);})
+					.selectAll("rect")
+					.data(function(d){return d;})
+					.enter()
+					.append("rect")
+					.attr("x",function(d){return x(d.data.State);})
+					.attr("y",function(d){return y(d[1]);})
+					.attr("height",function(d){return y(d[0]) - y(d[1]);})
+					.attr("width",x.bandwidth());
+				
+				//构建x轴
+				g.append("g")
+					.attr("class","axis x")
+					.attr("transform","translate(0,"+height+")")
+					.call(d3.axisBottom(x));
+				//构建y轴
+				g.append("g")
+					.attr("class","axis y")
+					.call(d3.axisLeft(y).ticks(10,"s"))
+					.append("text")
+					.attr("x",2)
+					.attr("y",y(y.ticks(10).pop()))
+					.attr("dy",".35em")
+					.attr("text-anchor","start")
+					.attr("fill","#000")
+					.text("Population");
+				//绘制堆积柱图
+				var legend = g.selectAll(".legend")
+								.data(data.columns.slice(1).reverse())
+								.enter()
+								.append("g")
+								.attr("class","legend")
+								.attr("transform",function(d,i){return "translate(0,"+i*20+")";})
+								.style("font","10px sans-serif");
+				legend.append("rect")
+						.attr("x",width-18)
+						.attr("width",18)
+						.attr("height",18)
+						.attr("fill",z);
+				legend.append("text")
+						.attr("x",width-24)
+						.attr("y",9)
+						.attr("dy",".35em")
+						.attr("text-anchor","end")
+						.text(function(d){return d;});
+			});
+			function type(d,i,columns){
+				//columns = [State,Under 5 Years,5 to 13 Years,14 to 17 Years,18 to 24 Years,25 to 44 Years,45 to 64 Years,65 Years and Over]
+				for(i=1,t=0;i<columns.length;++i){
+					t += (d[columns[i]] = +d[columns[i]]);
+				}
+				d.total = t;
+				return d;
+			}
+		</script>		
+	</body>
+</html>
