@@ -26,28 +26,28 @@ jdk选择：[jdk-8u131-linux-x64.tar.gz](http://www.oracle.com/technetwork/java/
 zookeeper选择：[zookeeper-3.4.10.tar.gz](https://mirrors.tuna.tsinghua.edu.cn/apache/zookeeper/)
 ## 创建zookeeper容器
 
-1. 创建集群子网  
+&#160; &#160; &#160; &#160;创建集群子网
 ```
 docker network create --subnet=172.18.0.0/16 cloud_network
 ```
-2. 创建容器并只读模式挂载物理机/data目录到容器的/mnt目录，用于工具集文件的解压安装
+&#160; &#160; &#160; &#160;创建容器并只读模式挂载物理机/data目录到容器的/mnt目录，用于工具集文件的解压安装
 ```
 docker create --privileged -v /data:/mnt:ro --name test -h test --net=cloud_network -it centos:7.3.1611
 ```
-3. 启动容器
+&#160; &#160; &#160; &#160;启动容器
 ```
 docker start test
 ```
-4. 进入容器
+&#160; &#160; &#160; &#160;进入容器
 ```
 docker exec -it test /bin/bash
 ```
-5. 容器[root@test]内解压工具集
+&#160; &#160; &#160; &#160;容器[root@test]内解压工具集
 ```
 tar xvf /mnt/jdk-8u131-linux-x64.tar.gz -C /usr/local/ && mv /usr/local/jdk1.8.0_131 /usr/local/jdk
 tar xvf /mnt/zookeeper-3.4.10.tar.gz -C /usr/local/ && mv /usr/local/zookeeper-3.4.10 /usr/local/zookeeper
 ```
-6. vim编辑~/.bashrc文件配置环境变量
+&#160; &#160; &#160; &#160;vim编辑~/.bashrc文件配置环境变量
 ```
 export JAVA_HOME=/usr/local/jdk
 export JRE_HOME=/usr/local/jdk/jre
