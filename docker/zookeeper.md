@@ -14,6 +14,7 @@ Docker version 17.06.0-ce, build 02c1d87
 Linux 3.10.0-327.el7.x86_64
 ```
 ## 集群目标
+
 |主机名称|IP地址|位置|
 |:---|:---|:---|
 |zookeeper0|172.18.2.1|master|
