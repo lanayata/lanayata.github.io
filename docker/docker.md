@@ -36,11 +36,11 @@ docker pull centos:7.3.1611
 &#160; &#160; &#160; &#160;常用命令
 ```
 #显示所有镜像
-docker images 
+docker images
 #显示所有运行的容器
-docker ps -a 
+docker ps -a
 #创建docker网络
-docker network create --subnet=172.18.0.0/16 cloud_network 
+docker network create --subnet=172.18.0.0/16 cloud_network
 #创建容器
 ## -p表示端口映射，12888为物理机段阔，2888为容器端口
 ## --privileged表示使用root权限创建容器
