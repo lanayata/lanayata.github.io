@@ -20,6 +20,7 @@ Linux 3.10.0-327.el7.x86_64
 |zookeeper0|172.18.2.1|master|
 |zookeeper1|172.18.2.2|slave|
 |zookeeper2|172.18.2.3|slave|
+
 ## 下载工具集
 jdk选择：[jdk-8u131-linux-x64.tar.gz](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)  
 zookeeper选择：[zookeeper-3.4.10.tar.gz](https://mirrors.tuna.tsinghua.edu.cn/apache/zookeeper/)
