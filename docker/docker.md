@@ -78,14 +78,15 @@ docker load --input /usr/local/storage/image.tar
 &#160; &#160; &#160; &#160;由于直接下载compose工具包安装失败，此处使用镜像安装docker-compose，版本选择1.14.0
 ```
 docker pull docker/compose:1.14.0
-curl -L --fail https://github.com/docker/compose/releases/download/1.14.0/run.sh > /usr/local/bin/docker-compose-install
-chmod u+x docker-compose-install
-cd /usr/local/bin/ && ./docker-compose-install
+curl -L --fail https://github.com/docker/compose/releases/download/1.14.0/run.sh > /usr/local/bin/docker-compose
+chmod u+x /usr/local/bin/docker-compose
 #测试是否安装成功
-docker-compose
+docker-compose --version
 ```
 ## 安装docker-machine
 &#160; &#160; &#160; &#160;docker-machine无镜像，使用工具包安装
 ```
 curl -L https://github.com/docker/machine/releases/download/v0.12.2/docker-machine-`uname -s`-`uname -m` >/tmp/dockermachine && chmod +x /tmp/docker-machine && sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+#测试是否安装成功
+docker-machine --version
 ```
