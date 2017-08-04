@@ -57,3 +57,4 @@ mkdir /etc/docker/certs.d/registry_name
 ```
 docker pull registry_name:5000/centos
 ```
+5. windows客户端手动安装ca证书即可
