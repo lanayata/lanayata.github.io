@@ -12,6 +12,13 @@ FROM centos:7.3.1611
 #维护者信息
 MAINTAINER jun.peng jun.peng@youbiai.com
 
+#挂在镜像映射目录
+VOLUME /usr/local/storage
+
+#对外开放端口号
+EXPOSE 80
+EXPOSE 443
+
 #定义变量
 ENV DEST_STORAGE /usr/local/storage
 
